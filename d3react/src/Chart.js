@@ -2,30 +2,31 @@ import React, { Component, useEffect } from 'react';
 import * as d3 from 'd3';
 
 export default function Chart(props) {
-    const ref = React.createRef();
+    let {data, height, width, color} = props;
+    const ref = React.useRef(null);
+    const group = d3.select(ref.current);
 
     useEffect(() => {
-        let refAccess = d3.select(ref.current);
-        refAccess.append('svg') //create svg item and append to div
-            .attr('width', props.width)
-            .attr('height', props.height)
-            .style('background-color', 'grey')
-            .style('padding', '1em')
-            .selectAll('rect') //select all ref items
-                .data(props.data) //join test data
-                //return all rects corresp. to data elements that aren't currently in DOM
-                .enter()
-                .append('rect') //create required rects
-                .attr('x', (data, index) => index * 70) //translate x axis of rects
-                .attr('y', (data, index) => props.height - 10 * data) //translate y axis of rects
-                .attr('width', 65)
-                .attr('height', (data, index) => data * 10)
-                .attr('fill', props.color)
-    }, [])
+        const update = group.selectAll('rect') //select all ref items
+            .data(data); //join test data
+
+        let bars = update.enter()
+            .append('rect') //create required rects
+            .merge(update)
+            .attr('x', (d, index) => index * 70) //translate x axis of rects
+            .attr('y', (d, index) => props.height - 10 * d) //translate y axis of rects
+            .attr('width', 65)
+            .attr('height', (d, index) => d * 10)
+            .attr('fill', color);
+
+        update.exit().remove();
+    }, )
 
     return(
-        <div ref={ref}>
-            
-        </div>
+        <svg width={width} height={height} style={
+            {backgroundColor:'grey', padding: '1em'}
+        }>
+          <g ref={ref} />
+        </svg>
     )
 }
